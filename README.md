@@ -156,6 +156,8 @@ report = sync(
  
 **SQLite registry is local.** The registry lives at `.chunks_sync.db` next to where you run sync. For distributed or multi-process deployments, a shared registry backend would be needed.
 
+**Swtiching embedding models mid-corpus is not yet detected.** If you change `embed_fn` to a different model, delete `.chunks_sync.db` to force a full re-index.
+
 ## roadmap
 
 - [ ] Paragraph-aware diffing: content-addressed chunk IDs to reduce re-embedding on large edits
