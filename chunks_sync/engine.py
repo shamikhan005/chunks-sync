@@ -7,7 +7,7 @@ from .hasher import hash_chunk_id, hash_content, hash_metadata
 from .loader import ChangeType, DocumentChange, scan_directory
 from .registry import ChunkRecord, ChunkRegistry, SyncReport
 
-_COST_PER_1K_TOKENS = 0.00002
+_DEFAULT_COST_PER_1K_TOKENS = 0.00002
 
 def _estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
@@ -25,6 +25,7 @@ def sync(
     vector_db: VectorDBAdapter,
     embed_fn: Callable[[list[str]], list[list[float]]],
     embedding_model: str = "text-embedding-3-small",
+    cost_per_1k_tokens: float = _DEFAULT_COST_PER_1K_TOKENS,
     chunk_size: int = 512,
     overlap: int = 64,
     registry_path: str = ".chunks_sync.db",
@@ -210,8 +211,8 @@ def sync(
             deleted_chunks += len(removed_ids)
 
     total_chunks = new_chunks + updated_chunks + skipped_chunks
-    cost = (tokens_used / 1000) * _COST_PER_1K_TOKENS
-    savings = (tokens_saved / 1000) * _COST_PER_1K_TOKENS
+    cost = (tokens_used / 1000) * cost_per_1k_tokens
+    savings = (tokens_saved / 1000) * cost_per_1k_tokens
 
     report = SyncReport(
         run_id=run_id,

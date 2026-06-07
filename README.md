@@ -95,7 +95,8 @@ report = sync(source="./docs", vector_db=adapter, embed_fn=embed)
 - **Deletion propagation:** when a source document is deleted, all its chunks are removed from the vector DB automatically
 - **Local chunk registry:** SQLite state table mapping every source document to its chunk IDs and content hashes
 - **Cost saving report:** every sync reports tokens used, tokens saved, and estimated API cost avoided
-- **Vector DB agnostic:** same `sync()` call works across Pinecone, Qdrant, and weaviate
+- **Vector DB agnostic:** same `sync()` call works across Pinecone, Qdrant, and Weaviate
+- **Embedding provider agnostic:** works with OpenAI, Cohere, Voyage, or any self-hosted model
 
 ## how it works
 
@@ -112,6 +113,7 @@ The chunk registry stores one row per chunk:
 | `source_version` | incremented on each content update |
 | `active` | set to false when source document is deleted |
 | `last_synced` | timestamp of last sync |
+| `embedding_model` | model used to produce the vector, stored for tracking |
 
 Content and metadata hashes are tracked separately. a permission change on a document propagates to all its chunks as a cheap metadata PATCH, no re-embedding, no GPU or API cost.
 
@@ -124,6 +126,59 @@ Content and metadata hashes are tracked separately. a permission change on a doc
 | Weaviate  | `WeaviateAdapter` | `pip install "chunks-sync[weaviate]"` |
  
 Adding a new adapter requires implementing three methods: `upsert`, `patch_metadata`, and `delete`. See `chunks_sync/adapters.py`.
+
+## embedding providers
+
+`embed_fn` is a plain callable — chunks-sync works with any embedding provider.
+
+**OpenAI:**
+```python
+import openai
+client = openai.OpenAI()
+ 
+def embed(texts: list[str]) -> list[list[float]]:
+    r = client.embeddings.create(input=texts, model="text-embedding-3-small")
+    return [x.embedding for x in r.data]
+ 
+report = sync(source="./docs", vector_db=adapter, embed_fn=embed)
+```
+
+**Cohere:**
+```python
+import cohere
+client = cohere.Client("YOUR_KEY")
+ 
+def embed(texts: list[str]) -> list[list[float]]:
+    r = client.embed(texts=texts, model="embed-english-v3.0", input_type="search_document")
+    return r.embeddings
+ 
+report = sync(
+    source="./docs",
+    vector_db=adapter,
+    embed_fn=embed,
+    embedding_model="embed-english-v3.0",
+    cost_per_1k_tokens=0.0001,
+)
+```
+
+**Self-hosted (sentence-transformers / BGE):**
+```python
+from sentence_transformers import SentenceTransformer
+model = SentenceTransformer("BAAI/bge-large-en-v1.5")
+ 
+def embed(texts: list[str]) -> list[list[float]]:
+    return model.encode(texts).tolist()
+ 
+report = sync(
+    source="./docs",
+    vector_db=adapter,
+    embed_fn=embed,
+    embedding_model="bge-large-en-v1.5",
+    cost_per_1k_tokens=0.0,   # self-hosted: no API cost
+)
+```
+
+The `cost_per_1k_tokens` parameter accepts your model's actual price so the cost report is accurate. Pass `0.0` for self-hosted models.
 
 ## permission and metadata sync
 
@@ -155,6 +210,8 @@ report = sync(
 **File renames are treated as delete + create.** Renaming `handbook.md` to `employee_handbook.md` causes all chunks to be deleted and re-ingested under the new path.
  
 **SQLite registry is local.** The registry lives at `.chunks_sync.db` next to where you run sync. For distributed or multi-process deployments, a shared registry backend would be needed.
+
+**Switching embedding models requires a full re-index.** If you change `embed_fn` to a different model, delete `.chunks_sync.db` to force a cold start. The registry tracks which model produced each chunk but does not yet detect model changes automatically.
 
 ## roadmap
 
