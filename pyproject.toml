@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chunks-sync"
+version = "0.1.0"
+description = "Incremental vector DB sync for RAG pipelines — only re-embeds what changed."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.13"
+keywords = ["rag", "vector-database", "embeddings", "pinecone", "qdrant", "weaviate", "llm", "incremental"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "xxhash>=3.0.0",
+]
+
+[project.optional-dependencies]
+pinecone = ["pinecone-client>=3.0.0"]
+qdrant = ["qdrant-client>=1.7.0"]
+weaviate = ["weaviate-client>=4.0.0"]
+pdf = ["pypdf>=4.0.0"]
+dev = [
+    "pytest>=7.0",
+]
+all = [
+    "pinecone-client>=3.0.0",
+    "qdrant-client>=1.7.0",
+    "weaviate-client>=4.0.0",
+    "pypdf>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/shamikhan005/chunks-sync"
+Issues = "https://github.com/shamikhan005/chunks-sync/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["chunks_sync"]
