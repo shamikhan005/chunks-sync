@@ -43,3 +43,9 @@ Issues = "https://github.com/shamikhan005/chunks-sync/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["chunks_sync"]
+
+[dependency-groups]
+dev = [
+    "tqdm>=4.68.2",
+    "wikipedia-api>=0.15.0",
+]

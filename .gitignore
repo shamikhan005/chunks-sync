@@ -10,3 +10,5 @@ wheels/
 .venv
 .chunks_sync.db
 sample_docs/
+benchmarks/data/
+benchmarks/results/
