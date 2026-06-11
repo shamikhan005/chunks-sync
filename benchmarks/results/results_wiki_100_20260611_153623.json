@@ -1,0 +1,65 @@
+{
+  "dataset": "wiki_100",
+  "doc_count": 99,
+  "total_chars": 3593175,
+  "avg_chars_per_doc": 36294,
+  "edit_pct": 0.1,
+  "runs": [
+    {
+      "label": "cold start",
+      "duration_seconds": 6.648,
+      "total_chunks": 160806,
+      "new_chunks": 160806,
+      "updated_chunks": 0,
+      "deleted_chunks": 0,
+      "skipped_chunks": 0,
+      "tokens_used": 2214910,
+      "tokens_saved": 0,
+      "api_calls_made": 160806,
+      "api_calls_avoided": 0,
+      "savings_pct": 0.0
+    },
+    {
+      "label": "no changes",
+      "duration_seconds": 1.083,
+      "total_chunks": 160806,
+      "new_chunks": 0,
+      "updated_chunks": 0,
+      "deleted_chunks": 0,
+      "skipped_chunks": 160806,
+      "tokens_used": 0,
+      "tokens_saved": 2214910,
+      "api_calls_made": 0,
+      "api_calls_avoided": 160806,
+      "savings_pct": 100.0
+    },
+    {
+      "label": "edit 10% of docs",
+      "duration_seconds": 1.274,
+      "total_chunks": 160798,
+      "new_chunks": 0,
+      "updated_chunks": 577,
+      "deleted_chunks": 8,
+      "skipped_chunks": 160221,
+      "tokens_used": 5262,
+      "tokens_saved": 2209825,
+      "api_calls_made": 577,
+      "api_calls_avoided": 160221,
+      "savings_pct": 99.6
+    },
+    {
+      "label": "delete 5% of docs",
+      "duration_seconds": 1.051,
+      "total_chunks": 157468,
+      "new_chunks": 0,
+      "updated_chunks": 0,
+      "deleted_chunks": 3330,
+      "skipped_chunks": 157468,
+      "tokens_used": 0,
+      "tokens_saved": 2159107,
+      "api_calls_made": 0,
+      "api_calls_avoided": 157468,
+      "savings_pct": 0.0
+    }
+  ]
+}
