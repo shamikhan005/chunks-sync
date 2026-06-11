@@ -52,41 +52,8 @@ report = sync(source="./docs", vector_db=adapter, embed_fn=embed)
 report = sync(source="./docs", vector_db=adapter, embed_fn=embed)
 ```
 
-**First sync:** 3 documents, 197 chunks ingested:
-
-```
-── chunks-sync report ──────────────────────
-  total chunks tracked : 197
-  new                  : 197
-  updated              : 0
-  deleted              : 0
-  skipped (unchanged)  : 0
-  tokens used          : 2,241
-  tokens saved         : 0
-  cost (this run)      : $0.0000
-  cost saved           : $0.0000
-  duration             : 0.1s
-────────────────────────────────────────────
-```
-
-**After editing one file:** 133 chunks skipped, only changed chunks re-embedded:
-
-```
-── chunks-sync report ──────────────────────
-  total chunks tracked : 198
-  new                  : 1
-  updated              : 64
-  deleted              : 0
-  skipped (unchanged)  : 133
-  tokens used          : 639
-  tokens saved         : 1,649
-  cost (this run)      : $0.0000
-  cost saved           : $0.0000
-  duration             : 0.0s
-────────────────────────────────────────────
-```
-
-67% of embedding calls skipped on a single-file edit across a 3-document corpus. Savings compound as your corpus grows.
+## benchmarks
+-> [benchmark results](BENCHMARKS.md) - tested against 99 wikipedia articles (3.59M chars)
 
 ## features
 
