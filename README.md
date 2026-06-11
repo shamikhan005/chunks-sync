@@ -100,7 +100,7 @@ report = sync(source="./docs", vector_db=adapter, embed_fn=embed)
 
 ## how it works
 
-
+<img width="888" height="532" alt="Screenshot 2026-06-07 194153" src="https://github.com/user-attachments/assets/bd45877c-b5ef-42d1-90ab-0dc459f5026f" />
 
 The chunk registry stores one row per chunk:
 
