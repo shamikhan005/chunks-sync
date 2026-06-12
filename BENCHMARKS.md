@@ -7,60 +7,115 @@ Dataset: public Wikipedia articles via `wikipedia-api`.
 Benchmark script: [`benchmarks/run_benchmark.py`](benchmarks/run_benchmark.py)
 Reproducible: `uv run python benchmarks/run_benchmark.py --data benchmarks/data/wiki_100`
 
-### no-change sync (nothing edited)
+Embedding model:
+- OpenAI-compatible benchmark assumptions
+- Approximate token count: 1,015,8591 characters
+- Cost model: text-embedding-small-3-small pricing ($0.00002 / 1K tokens)
 
-| metric | value |
-|---|---|
-| chunks tracked | 160,806 |
-| chunks skipped | 160,806 |
-| API calls made | 0 |
-| API calls avoided | 160,806 |
-| savings | 100% |
-| sync time | 1.06s |
+### Cold Start
 
-If nothing changed since the last sync, chunks-sync makes zero embedding API calls.
+First sync into an empty vector index.
 
-### incremental sync (edited N% of documents)
+| Metric | Value |
+|----------|----------|
+| Chunks embedded | 8,130 |
+| Tokens embedded | 1,015,891 |
+| API calls | 8,130 |
+| Time | 1.25s |
 
-| edit scenario | docs edited | chunks updated | chunks skipped | API calls | savings |
-|---|---|---|---|---|---|
-| edit 1% of docs | 1 of 99 | 64 | 160,741 | 64 | 99.96% |
-| edit 5% of docs | 4 of 99 | 257 | 160,546 | 257 | 99.8% |
-| edit 10% of docs | 9 of 99 | 577 | 160,221 | 577 | 99.6% |
+All chunks are embedded and written to the vector database.
 
-A naive pipeline re-embeds every chunk on any change.
-chunks-sync re-embeds only the chunks that actually changed.
+### No Changes
 
-<img width="1106" height="612" alt="Screenshot 2026-06-11 153808" src="https://github.com/user-attachments/assets/10de44e4-e4cd-4fdd-ae7a-df9e88e3c3f5" />
-<img width="995" height="513" alt="Screenshot 2026-06-11 153821" src="https://github.com/user-attachments/assets/ba8c0f3e-546a-4ba4-b46f-09dc43d1f4af" />
-<img width="1111" height="638" alt="Screenshot 2026-06-11 153525" src="https://github.com/user-attachments/assets/f42ef960-172d-4cc3-8449-f3b8d6831d4a" />
-<img width="1097" height="527" alt="Screenshot 2026-06-11 153539" src="https://github.com/user-attachments/assets/07be8ba2-e268-4001-900e-a2d150a32e7c" />
-<img width="1108" height="611" alt="Screenshot 2026-06-11 153647" src="https://github.com/user-attachments/assets/fdc22d73-d420-4646-af5c-d851a8ab2f30" />
-<img width="1025" height="532" alt="Screenshot 2026-06-11 153701" src="https://github.com/user-attachments/assets/fedd88a9-050f-4560-92cb-b88924ae5a71" />
+Second sync with no document modifications.
 
-At `text-embedding-3-small` pricing ($0.02/1M tokens), editing 5% of this corpus:
+| Metric | Value |
+|----------|----------|
+| Chunks embedded | 0 |
+| Chunks skipped | 8,130 |
+| API calls | 0 |
+| Embedding savings | 100% |
+| Time | 0.09s |
 
-| approach | tokens used | estimated cost |
-|---|---|---|
-| naive (re-embed all) | 2,214,910 | $0.044 |
-| chunks-sync | 2,360 | $0.000047 |
-| **savings** | **2,212,550** | **$0.044 per sync** |
+No embeddings are generated because chunk content hashes match the registry.
 
-Run this sync daily and that's ~$16/year saved on this corpus alone.
-The savings scale linearly with corpus size.
+### Edit 1% of Documents
 
-### deletion sync (documents removed)
+1 of 99 documents modified.
 
-| metric | value |
-|---|---|
-| docs deleted | 4–5 of 99 |
-| orphaned chunks removed | 3,330–4,281 |
-| API calls to vector DB | automatic |
-| manual cleanup required | none |
+| Metric | Value |
+|----------|----------|
+| Chunks re-embedded | 1 |
+| Chunks skipped | 8,129 |
+| API calls | 1 |
+| Embedding savings | 99.99% |
+| Time | 0.09s |
 
-When source documents are deleted, all their chunks are automatically removed from the
-vector index. Without chunks-sync, those chunks remain indefinitely, the LLM continues
-answering from deleted content.
+Only the modified chunk is re-embedded.
+
+### Edit 5% of Documents
+
+4 of 99 documents modified.
+
+| Metric | Value |
+|----------|----------|
+| Chunks re-embedded | 4 |
+| Chunks skipped | 8,126 |
+| API calls | 4 |
+| Embedding savings | 99.95% |
+| Time | 0.13s |
+
+Only affected chunks are re-embedded.
+
+### Edit 10% of Documents
+
+9 of 99 documents modified.
+
+| Metric | Value |
+|----------|----------|
+| Chunks re-embedded | 10 |
+| Chunks skipped | 8,121 |
+| API calls | 10 |
+| Embedding savings | 99.88% |
+| Time | 0.19s |
+
+Even with 10% of documents modified, fewer than 0.2% of chunks required re-embedding.
+
+### Delete 5% of Documents
+
+4 documents removed from the corpus.
+
+| Metric | Value |
+|----------|----------|
+| Chunks deleted | 260 |
+| Embedding calls | 0 |
+| Time | 0.09s |
+
+Orphaned vectors are automatically removed from the index.
+
+### Metadata-Only Update
+
+ACL / permission metadata changed.
+
+| Metric | Value |
+|----------|----------|
+| Chunks re-embedded | 0 |
+| Metadata PATCH operations | 208 |
+| Embedding calls | 0 |
+
+Metadata changes propagate without recomputing embeddings.
+
+<img width="957" height="632" alt="Screenshot 2026-06-12 222826" src="https://github.com/user-attachments/assets/3da871a2-8082-4229-a931-cc2f1e3ab19d" />
+
+<img width="1037" height="517" alt="Screenshot 2026-06-12 222833" src="https://github.com/user-attachments/assets/83de2bde-ccf6-42a0-a614-741ea90075b3" />
+
+<img width="982" height="636" alt="Screenshot 2026-06-12 222905" src="https://github.com/user-attachments/assets/131e4ee1-8dd4-458f-a3fd-3f543e14e824" />
+
+<img width="952" height="508" alt="Screenshot 2026-06-12 222918" src="https://github.com/user-attachments/assets/341fdb03-6d6f-403c-845a-64a2e2aa4a20" />
+
+<img width="927" height="630" alt="Screenshot 2026-06-12 223048" src="https://github.com/user-attachments/assets/f6840eb0-86de-4433-9a38-6955339058dc" />
+
+<img width="1008" height="511" alt="Screenshot 2026-06-12 223101" src="https://github.com/user-attachments/assets/856e76a2-a5df-4b94-8549-e12a0b1d82fb" />
 
 ### note on timing
 
