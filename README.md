@@ -225,7 +225,7 @@ report = sync(
 git clone https://github.com/shamikhan005/chunks-sync
 cd chunks-sync
 uv sync
-uv run python test_core.py   # 9/9 should pass
+uv run python test_core.py
 ```
 
 Open an issue if you want a specific connector or vector DB adapter next.
