@@ -289,9 +289,72 @@ def test_overlap_validation():
         pass
     print("  PASS — invalid overlap correctly rejected")
 
+def test_no_tail_chunk_explosion():
+    print("test 10: no tail chunk explosion")
+
+    from chunks_sync.chunker import chunk_text
+
+    text = "A" * 600
+
+    chunks = chunk_text(
+        text,
+        chunk_size=512,
+        overlap=64,
+    )
+
+    assert len(chunks) == 2, (
+        f"Expected 2 chunks, got {len(chunks)}"
+    )
+
+    print("  PASS — tail chunk explosion prevented")
+
+def test_realistic_chunk_density():
+    print("test 11: realistic chunk density")
+
+    from chunks_sync.chunker import chunk_text
+
+    text = "The quick brown fox jumps over the lazy dog. " * 800
+
+    chunks = chunk_text(
+        text,
+        chunk_size=512,
+        overlap=64,
+    )
+
+    avg_chars_per_chunk = len(text) / len(chunks)
+
+    assert avg_chars_per_chunk > 250, (
+        f"Chunk density too low: {avg_chars_per_chunk}"
+    )
+
+    print(
+        f"  PASS — {avg_chars_per_chunk:.1f} chars/chunk"
+    )
+
+def test_chunk_count_sanity():
+    print("test 12: chunk count sanity")
+
+    from chunks_sync.chunker import chunk_text
+
+    text = "The quick brown fox jumps over the lazy dog. " * 800
+
+    chunks = chunk_text(
+        text,
+        chunk_size=512,
+        overlap=64,
+    )
+
+    assert len(chunks) < 200, (
+        f"Produced suspiciously many chunks: {len(chunks)}"
+    )
+
+    print(
+        f"  PASS — {len(chunks)} chunks generated"
+    )
 
 if __name__ == "__main__":
     print("\nrunning chunks-sync tests\n")
+
     test_first_sync()
     test_no_change_sync()
     test_update_sync()
@@ -301,4 +364,9 @@ if __name__ == "__main__":
     test_file_rename_behavior()
     test_cost_savings_reported()
     test_overlap_validation()
+
+    test_no_tail_chunk_explosion()
+    test_realistic_chunk_density()
+    test_chunk_count_sanity()
+
     print("\nall tests passed ✓\n")

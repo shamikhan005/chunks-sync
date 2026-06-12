@@ -19,6 +19,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
+    "pinecone>=9.1.0",
+    "python-dotenv>=1.2.2",
+    "typing-extensions>=4.15.0",
     "xxhash>=3.0.0",
 ]
 

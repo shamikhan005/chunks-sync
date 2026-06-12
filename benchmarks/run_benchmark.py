@@ -30,6 +30,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 import sys
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from chunks_sync import sync
@@ -63,7 +64,7 @@ class BenchmarkAdapter(VectorDBAdapter):
         self.upsert_count = 0
         self.patch_count = 0
         self.delete_count = 0
-
+        
 
 def mock_embed(texts: list[str]) -> list[list[float]]:
     """Deterministic fake embeddings — no API calls needed for benchmarking."""
@@ -117,6 +118,10 @@ def run_benchmark(data_dir: Path, edit_pct: float = 0.05) -> BenchmarkResult:
     print(f"  total chars : {total_chars:,}")
     print(f"  avg per doc : {total_chars // doc_count:,} chars")
     print(f"  edit pct    : {edit_pct * 100:.0f}%")
+
+    expected_chunks = total_chars // (512 - 64)
+    print(f"  expected chunks (rough): ~{expected_chunks:,}")
+
     print(f"────────────────────────────────────────────────────────\n")
 
     tmpdir = tempfile.mkdtemp(prefix="chunks_sync_bench_")
@@ -152,7 +157,7 @@ def run_benchmark(data_dir: Path, edit_pct: float = 0.05) -> BenchmarkResult:
             tokens_used=r1.tokens_used,
             tokens_saved=r1.tokens_saved,
             api_calls_made=adapter.upsert_count,
-            api_calls_avoided=0,  # first sync — nothing to avoid
+            api_calls_avoided=0, 
             savings_pct=0.0,
         ))
         print(f"  → {r1.total_chunks:,} chunks, {r1.duration_seconds:.2f}s\n")
@@ -312,7 +317,6 @@ def print_results(result: BenchmarkResult):
         print(f"  deletion sync   : {delete_run.deleted_chunks} orphaned chunks "
               f"removed from index")
     print()
-
 
 def save_results(result: BenchmarkResult, output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
