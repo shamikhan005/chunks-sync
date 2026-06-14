@@ -51,7 +51,7 @@ No embeddings are generated because chunk content hashes match the registry.
 | Embedding savings | 99.99% |
 | Time | 0.09s |
 
-Only the modified chunk is re-embedded.
+The benchmark appends a short paragraph to one document. Because chunk IDs are position-based, existing chunks stay at the same positions and are skipped. Only the newly approached chunk is embedded.
 
 ### Edit 5% of Documents
 
@@ -91,7 +91,7 @@ Even with 10% of documents modified, fewer than 0.2% of chunks required re-embed
 | Embedding calls | 0 |
 | Time | 0.09s |
 
-Orphaned vectors are automatically removed from the index.
+Orphaned vectors are automatically removed from the index. No manual cleanup required.
 
 ### Metadata-Only Update
 
@@ -103,7 +103,7 @@ ACL / permission metadata changed.
 | Metadata PATCH operations | 208 |
 | Embedding calls | 0 |
 
-Metadata changes propagate without recomputing embeddings.
+Permission changes propagate as lightweight PATCH calls to the vector DB. No re-embedding. No GPU or API cost.
 
 <img width="957" height="632" alt="Screenshot 2026-06-12 222826" src="https://github.com/user-attachments/assets/3da871a2-8082-4229-a931-cc2f1e3ab19d" />
 
@@ -124,6 +124,6 @@ embedding function with no network latency. In a real deployment, incremental sy
 depends on how many chunks need re-embedding × your embedding API latency. The API call
 counts above are exact and directly translate to real cost savings.
 
-Cold start (first sync, 160K chunks): **6.56 seconds** of processing overhead.
-Incremental sync (subsequent runs): **~1.1 seconds** regardless of corpus size,
+Cold start (first sync, 8,130 chunks): **1.25 seconds** of processing overhead.
+Incremental sync (subsequent runs): **~0.09-0.19 seconds** regardless of corpus size,
 as long as the changed fraction is small.
