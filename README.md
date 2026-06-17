@@ -189,14 +189,6 @@ report = sync(
 
 **Switching embedding models requires a full re-index.** If you change `embed_fn` to a different model, delete `.chunks_sync.db` to force a cold start. The registry tracks which model produced each chunk but does not yet detect model changes automatically.
 
-## roadmap
-
-- [ ] Paragraph-aware diffing: content-addressed chunk IDs to reduce re-embedding on large edits
-- [ ] Batch vector operations: single API call per sync instead of per chunk
-- [ ] Registry inspection CLI: `chunks-sync status`, `chunks-sync list-docs`
-- [ ] Governance metadata: ownership, sensitivity classification, expiry per chunk
-- [ ] Connectors: Notion, Confluence, S3, Google Drive
-
 ## contributing
 
 ```bash
@@ -205,8 +197,6 @@ cd chunks-sync
 uv sync
 uv run python test_core.py
 ```
-
-Open an issue if you want a specific connector or vector DB adapter next.
 
 ## License
 
